@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user
 from flask_limiter.util import get_remote_address
@@ -24,7 +24,8 @@ def login():
             return redirect(url_for('dashboard.dashboard'))
         else:
             flash('Invalid credentials, try again.', 'danger')
-    return render_template('login.html')
+    # return render_template('login.html')
+    return jsonify({"message": "You will login here", "status": "in progress"})
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -49,8 +50,8 @@ def register():
 
         flash('Account created successfully!', 'success')
         return redirect(url_for('auth.login'))
-    
-    return render_template('register.html')
+    return jsonify({"message": "You will register here", "status": "in progress"})
+    #return render_template('register.html')
 
 @auth_bp.route('/logout')
 @login_required
