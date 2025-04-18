@@ -11,14 +11,12 @@ profile_bp = Blueprint('profile', __name__)
 def get_watchlist():
     user_id = get_jwt_identity()
 
-    # Pobierz zakres z query stringa (domyślnie wszystko)
+    # Get slice from query string (default everything)
     start = request.args.get('start', default=0, type=int)
     end = request.args.get('end', default=None, type=int)
-
-    # Pobieramy filmy użytkownika
+    
     query = Watchlist.query.filter_by(user_id=user_id)
 
-    # Jeśli jest zakres, to robimy slice
     if end is not None:
         query = query.slice(start, end)
     else:
@@ -26,7 +24,7 @@ def get_watchlist():
 
     results = query.all()
 
-    # Przekształcamy w JSON
+    # To JSON
     watchlist = [{"id": w.id, "title": w.title} for w in results]
 
     return jsonify(watchlist)
@@ -45,12 +43,12 @@ def add_to_watchlist():
     if not movie_id:
         return jsonify({"msg": "Missing movie_id"}), 400
 
-    # Sprawdzenie, czy film istnieje
+    # Check if movie exist
     movie = Movies.query.get(movie_id)
     if not movie:
         return jsonify({"msg": f"Movie with id {movie_id} not found"}), 404
 
-    # Dodanie do watchlisty
+    # Add to watchlist
     new_entry = Watchlist(user_id=user_id, movie_id=movie_id)
     db.session.add(new_entry)
     db.session.commit()
@@ -59,10 +57,8 @@ def add_to_watchlist():
         "msg": "Movie added to watchlist",
         "id": new_entry.id,
         "movie_id": new_entry.movie_id,
-        "title": movie.title  # dodatkowo możesz zwrócić tytuł
+        "title": movie.title
     }), 201
-
-# main.py (lub odpowiedni plik z trasami)
 
 @profile_bp.route('/recommendation', methods=['GET'])
 @jwt_required()
@@ -75,13 +71,13 @@ def recommendation():
     """
     user_id = get_jwt_identity()
 
-    # Wywołanie funkcji losującej, która zwraca ID filmu
+    # Get recommendation
     movie_id = reco(user_id)
 
     if movie_id is None:
         return jsonify({"msg": "No movies available for recommendation"}), 404
 
-    # Pobieramy szczegóły filmu z bazy
+    # Get details of a movie
     recommended_movie = Movies.query.get(movie_id)
 
     return jsonify({
